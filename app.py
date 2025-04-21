@@ -84,7 +84,7 @@ def predict():
 
 # Start Flask in a background thread (only once)
 def run_flask():
-    app.run(port=5000)
+    app.run(host="0.0.0.0", port=5000) 
 
 if not hasattr(app, 'started'):
     thread = Thread(target=run_flask)
