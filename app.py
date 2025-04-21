@@ -9,14 +9,18 @@ import requests
 
 app = Flask(__name__)
 
-# Define paths
+# === Get base directory from user or env variable ===
+BASE_DIR = os.environ.get("ENV_DIR", ".")  # "." means current directory if ENV_DIR not set
+
+# Define paths (relative to the base directory)
 reference_paths = {
-    "Melanoma": r"C:\Users\krish\Desktop\ML C2B2\Melanoma",
-    "Basal Cell Carcinoma": r"C:\Users\krish\Desktop\ML C2B2\Basal Cell Carcinoma",
-    "Squamous Cell Carcinoma": r"C:\Users\krish\Desktop\ML C2B2\Squamous Cell Carcinoma",
-    "Benign": r"C:\Users\krish\Desktop\ML C2B2\Benign"
+    "Melanoma": os.path.join(BASE_DIR, "Melanoma"),
+    "Basal Cell Carcinoma": os.path.join(BASE_DIR, "Basal Cell Carcinoma"),
+    "Squamous Cell Carcinoma": os.path.join(BASE_DIR, "Squamous Cell Carcinoma"),
+    "Benign": os.path.join(BASE_DIR, "Benign")
 }
-upload_folder = r"C:\Users\krish\Desktop\ML C2B2\uploads"
+
+upload_folder = os.path.join(BASE_DIR, "uploads")
 os.makedirs(upload_folder, exist_ok=True)
 
 # Load reference images
@@ -82,31 +86,6 @@ def predict():
         "similarity_percent": round(similarity, 2)
     })
 
-# Start Flask in a background thread (only once)
-def run_flask():
-    app.run(host="0.0.0.0", port=5000) 
-
-if not hasattr(app, 'started'):
-    thread = Thread(target=run_flask)
-    thread.daemon = True
-    thread.start()
-    time.sleep(3)
-    app.started = True
-
-# === Send a test image from the test folder ===
-test_folder = r"C:\Users\krish\Desktop\ML C2B2\test"
-test_image_path = None
-
-# Pick the first valid image from the folder
-for fname in os.listdir(test_folder):
-    if fname.lower().endswith(('.jpg', '.png', '.jpeg')):
-        test_image_path = os.path.join(test_folder, fname)
-        break
-
-if test_image_path:
-    with open(test_image_path, 'rb') as img_file:
-        files = {'file': img_file}
-        response = requests.post("http://127.0.0.1:5000/predict", files=files)
-    print("Prediction Result:\n", response.json())
-else:
-    print("No test image found in the folder.")
+# Optional test section — comment out on Render
+if __name__ == '__main__':
+    app.run(host="0.0.0.0", port=5000)
